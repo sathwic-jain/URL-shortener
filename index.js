@@ -34,6 +34,9 @@ async function genpassword(password) {
   return hashpassword;
 }
 
+app.get("/",async(req,res)=>{
+  res.send("Welcome to URL-shortener app,Kindly login");
+})
 app.post("/signup", async (req, res) => {
   console.log(req.body);
   var hpassword;
