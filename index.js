@@ -76,7 +76,7 @@ app.post("/login", async (req, res) => {
       process.env.url_token + user.username
     );
     res.send({ message: "success", token: token });
-  } else res.send({ message: "error" });
+  } else res.status(401).send({ message: "error" });
 });
 
 app.post("/activate", async (req, res) => {
