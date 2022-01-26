@@ -64,12 +64,15 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
+
   const client = await createConnection();
   const user = await client
     .db("URL")
     .collection("users")
     .findOne({ username: username });
-  const pass = bcrypt.compare(user.password, password);
+  var pass =await bcrypt.compare(user.password, password);
+  
+  console.log(pass);
   if (pass && user.active==="yes") {
     const token = jwt.sign(
       { username: user.username },
