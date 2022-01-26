@@ -39,12 +39,10 @@ app.get("/",async(req,res)=>{
 })
 app.post("/signup", async (req, res) => {
   console.log(req.body);
-  var hpassword;
+  
   const { username, password } = req.body;
-  const data = genpassword(password);
-  data.then((data1) => {
-    hpassword = data1;
-  });
+  const hpassword =await genpassword(password);
+  
   const client = await createConnection();
   console.log(hpassword);
   const user = await client
