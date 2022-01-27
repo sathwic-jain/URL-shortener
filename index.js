@@ -51,13 +51,14 @@ app.post("/signup", async (req, res) => {
     .findOne({ username: username });
   if (user) res.status(405).send({ message: "You already exist with us" });
   else {
-    const act_token =await Activate({ username });
+    const act_token = Activate({ username });
     if (act_token){
       await client
         .db("URL")
         .collection("users")
         .insertOne({ username: username, password: hpassword });
         res.status(205).send({message:"Activate your account"});
+        console.log("here");
   }
   }
 });
@@ -120,9 +121,12 @@ export async function Activate({ username }) {
   transporter.sendMail(mailOptions, function (err, res) {
     if (err) {
       console.error("there was an error: ", err);
+      return null;
     } else {
       console.log("here is the res: ", res);
+      console.log("hellomf");
+      return token;
     }
   });
-  return token;
+  
 }
