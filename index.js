@@ -115,7 +115,7 @@ export async function Activate({ username }) {
     from: "testing.00k@gmail.com",
     to: `${username}`,
     subject: `Activate your account`,
-    text: "http://localhost:3000/activate/" + token,
+    text: "http://localhost:3000/activate/" + token +"/"+ username,
     replyTo: `test`,
   };
   transporter.sendMail(mailOptions, function (err, res) {
