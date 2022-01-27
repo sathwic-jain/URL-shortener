@@ -57,7 +57,7 @@ app.post("/signup", async (req, res) => {
         .db("URL")
         .collection("users")
         .insertOne({ username: username, password: hpassword });
-        res.status(200).send({message:"Activate your account"});
+        res.status(205).send({message:"Activate your account"});
   }
   }
 });
