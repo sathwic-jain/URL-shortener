@@ -49,14 +49,16 @@ app.post("/signup", async (req, res) => {
     .db("URL")
     .collection("users")
     .findOne({ username: username });
-  if (user) res.send({ message: "You already exist with us" });
+  if (user) res.status(405).send({ message: "You already exist with us" });
   else {
     const act_token = Activate({ username });
-    if (act_token)
+    if (act_token){
       await client
         .db("URL")
         .collection("users")
         .insertOne({ username: username, password: hpassword });
+        res.status(200).send({message:"Activate your account"});
+  }
   }
 });
 
