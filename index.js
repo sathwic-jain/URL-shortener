@@ -92,9 +92,9 @@ app.post("/activate", async (req, res) => {
       .db("URL")
       .collection("users")
       .updateOne({ username: username }, { $set: { active: "yes" } });
-    res.send({ message: "activated" });
+    res.status(200).send({ message: "activated" });
   } else {
-    res.send({ message: "Incorrect activation link" });
+    res.status(401).send({ message: "Incorrect activation link" });
   }
 });
 export async function Activate({ username }) {
