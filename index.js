@@ -51,7 +51,7 @@ app.post("/signup", async (req, res) => {
     .findOne({ username: username });
   if (user) res.status(405).send({ message: "You already exist with us" });
   else {
-    const act_token = Activate({ username });
+    const act_token =await Activate({ username });
     if (act_token){
       await client
         .db("URL")
