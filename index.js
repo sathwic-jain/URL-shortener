@@ -6,6 +6,7 @@ import cors from "cors";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
+
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -99,6 +100,19 @@ app.post("/activate", async (req, res) => {
   }
 });
 
+app.get("/s", async (req, res) => {
+  const { url_short } = req.body;
+  const real_url="http://localhost:3000/s/"+url_short
+
+    const client = await createConnection();
+    const user = await client
+      .db("URL")
+      .collection("Url")
+      .findOne({short:real_url});
+          res.status(200).send({ url:user.short });
+  
+});
+
 app.post("/get-url", async (req, res) => {
   const { url } = req.body;
   const client = await createConnection();
@@ -110,13 +124,14 @@ app.post("/get-url", async (req, res) => {
         .db("URL")
         .collection("Url")
         .findOne({ short: shorted });
-    } while (shorted === user_url.short);
-    const short_url = "http://localhost:3000/s" + `${shorted}`;
-    const user_add = await client
+    } while (user_url);
+    const short_url = "http://localhost:3000/s/" + `${shorted}`;
+     await client
       .db("URL")
       .collection("Url")
       .insertOne({ url: url, short: short_url });
-    res.send(user_add);
+      const user_add = await client.db("URL").collection("Url").findOne({ url: url });
+      res.send(user_add);
   } else if (user) res.send(user);
 });
 export async function Activate({ username }) {
