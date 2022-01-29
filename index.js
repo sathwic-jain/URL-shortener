@@ -98,6 +98,30 @@ app.post("/activate", async (req, res) => {
     res.status(401).send({ message: "Incorrect activation link" });
   }
 });
+
+app.post("/get-url",async(req,res)=>{
+  const {url}=req.body;
+  const client = await createConnection();
+    const user = await client
+      .db("URL")
+      .collection("Url").findOne({url:url});
+      if(!user){
+        
+        do{
+          var shorted=makeid();
+          var user_url = await client
+      .db("URL")
+      .collection("Url").findOne({short:shorted});
+
+        }while(shorted===user_url.short)
+        const short_url="http://localhost:3000/s"+`${shorted}`;
+        const user_add = await client
+      .db("URL")
+      .collection("Url").insertOne({url:url,short:short_url});
+      res.send(user_add);
+      }
+      else if(user)res.send(user);
+})
 export async function Activate({ username }) {
   console.log(username);
   const token = jwt.sign(
@@ -130,4 +154,14 @@ export async function Activate({ username }) {
     }
   });
   
+}
+
+function makeid() {
+  var text = "";
+  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+  for (var i = 0; i < 5; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
 }
