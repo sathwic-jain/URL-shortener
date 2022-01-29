@@ -34,16 +34,16 @@ async function genpassword(password) {
   return hashpassword;
 }
 
-app.get("/",async(req,res)=>{
+app.get("/", async (req, res) => {
   res.send("Welcome to URL-shortener app,Kindly login");
-})
+});
 app.post("/signup", async (req, res) => {
   console.log(req.body);
-  
+
   const { username, password } = req.body;
   console.log(password);
-  const hpassword =await genpassword(password);
-  
+  const hpassword = await genpassword(password);
+
   const client = await createConnection();
   console.log(hpassword);
   const user = await client
@@ -53,29 +53,29 @@ app.post("/signup", async (req, res) => {
   if (user) res.status(405).send({ message: "You already exist with us" });
   else {
     const act_token = Activate({ username });
-    if (act_token){
+    if (act_token) {
       await client
         .db("URL")
         .collection("users")
         .insertOne({ username: username, password: hpassword });
-        res.status(205).send({message:"Activate your account"});
-        console.log("here");
-  }
+      res.status(205).send({ message: "Activate your account" });
+      console.log("here");
+    }
   }
 });
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  
+
   const client = await createConnection();
   const user = await client
     .db("URL")
     .collection("users")
     .findOne({ username: username });
-  const pass =await bcrypt.compare(password, user.password);
+  const pass = await bcrypt.compare(password, user.password);
 
   console.log(pass);
-  if (pass && user.active==="yes") {
+  if (pass && user.active === "yes") {
     const token = jwt.sign(
       { username: user.username },
       process.env.url_token + user.username
@@ -99,29 +99,26 @@ app.post("/activate", async (req, res) => {
   }
 });
 
-app.post("/get-url",async(req,res)=>{
-  const {url}=req.body;
+app.post("/get-url", async (req, res) => {
+  const { url } = req.body;
   const client = await createConnection();
-    const user = await client
+  const user = await client.db("URL").collection("Url").findOne({ url: url });
+  if (!user) {
+    do {
+      var shorted = makeid();
+      var user_url = await client
+        .db("URL")
+        .collection("Url")
+        .findOne({ short: shorted });
+    } while (shorted === user_url.short);
+    const short_url = "http://localhost:3000/s" + `${shorted}`;
+    const user_add = await client
       .db("URL")
-      .collection("Url").findOne({url:url});
-      if(!user){
-        
-        do{
-          var shorted=makeid();
-          var user_url = await client
-      .db("URL")
-      .collection("Url").findOne({short:shorted});
-
-        }while(shorted===user_url.short)
-        const short_url="http://localhost:3000/s"+`${shorted}`;
-        const user_add = await client
-      .db("URL")
-      .collection("Url").insertOne({url:url,short:short_url});
-      res.send(user_add);
-      }
-      else if(user)res.send(user);
-})
+      .collection("Url")
+      .insertOne({ url: url, short: short_url });
+    res.send(user_add);
+  } else if (user) res.send(user);
+});
 export async function Activate({ username }) {
   console.log(username);
   const token = jwt.sign(
@@ -140,7 +137,7 @@ export async function Activate({ username }) {
     from: "testing.00k@gmail.com",
     to: `${username}`,
     subject: `Activate your account`,
-    text: "http://localhost:3000/activate/" + token +"/"+ username,
+    text: "http://localhost:3000/activate/" + token + "/" + username,
     replyTo: `test`,
   };
   transporter.sendMail(mailOptions, function (err, res) {
@@ -153,12 +150,12 @@ export async function Activate({ username }) {
       return token;
     }
   });
-  
 }
 
 function makeid() {
   var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   for (var i = 0; i < 5; i++)
     text += possible.charAt(Math.floor(Math.random() * possible.length));
