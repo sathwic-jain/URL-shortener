@@ -109,7 +109,7 @@ app.post("/s", async (req, res) => {
       .db("URL")
       .collection("Url")
       .findOne({short:real_url});
-          res.status(200).send({ url:user.short });
+          res.status(200).send({ url:user.url });
   
 });
 
