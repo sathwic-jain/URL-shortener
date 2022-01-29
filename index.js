@@ -101,8 +101,8 @@ app.post("/activate", async (req, res) => {
 });
 
 app.post("/s", async (req, res) => {
-  const { url_short } = req.body;
-  const real_url="http://localhost:3000/s/"+url_short
+  const {short } = req.body;
+  const real_url="http://localhost:3000/s/"+short
 
     const client = await createConnection();
     const user = await client
