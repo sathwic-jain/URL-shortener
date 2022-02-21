@@ -1,4 +1,4 @@
-import express, { response } from "express";
+import express from "express";
 import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 import bcrypt from "bcrypt";
@@ -113,6 +113,17 @@ app.post("/s", async (req, res) => {
   
 });
 
+app.get("/all", async (req, res) => {
+
+    const client = await createConnection();
+    const  urls = await client
+      .db("URL")
+      .collection("Url").find({}).toArray()
+      
+          res.status(200).send({ data:urls });
+  
+});
+
 app.post("/get-url", async (req, res) => {
   const { url } = req.body;
   const client = await createConnection();
@@ -177,3 +188,91 @@ function makeid() {
 
   return text;
 }
+
+app.post("/forgot",async (request, response) => {
+  console.log(request.body);
+  const { username } = request.body;
+  const userName = await Forgot({username});
+  if (userName){
+    console.log(userName);
+    response.send({message:"found"});
+}
+  else response.status(401).send({message:"invalid credentials"});
+});
+
+async function Forgot({username}){
+  const client = await createConnection();
+    const user=await client.db("URL")
+    .collection("Url").findOne({username:username});
+    if(user){   
+      const token = jwt.sign({ id: user._id }, user.username,{expiresIn:"10h"});
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.user,
+          pass: process.env.pass
+        }
+      })
+      
+      const mailOptions = {
+        from: 'testing.00k@gmail.com',
+        to: `${username}`,
+        subject: "Reset password link",
+        text: "http://localhost:3000/Reset/"+token,
+        replyTo: `test`
+      }
+      transporter.sendMail(mailOptions, function(err, res) {
+        if (err) {
+          console.error('there was an error: ', err);
+        } else {
+          console.log('here is the res: ', res)
+        }
+      })
+      return token;
+    }
+    
+    else return null;
+  }
+
+  app.post("/forgot/reset",async (request, response) => {
+    console.log(request.body);
+    const { email,password,token } = request.body;
+    const userReset = await Reset({email,password,token});
+    if (userReset==="found"){
+      console.log(userReset);
+      response.send({message:"Password changed successfully"});
+  }
+    else if(userReset==="not found") response.status(401).send({message:"invalid credentials"});
+    else if(userReset==="wrong token") response.status(402).send({message:"Try forgot password again"})
+  });
+
+   async function Reset({ email,password,token }) {
+     console.log(email,"shit");
+    const client = await createConnection();
+    const User = await client
+    .db("URL")
+    .collection("Url")
+      .findOne({ username: email });
+      console.log(User)
+    if(User){
+      try{
+      const pass=jwt.verify(token,User.username);
+      }catch{return "wrong token"}
+      {
+        const hpassword = await genPassword(password);
+        const userReset = await client
+        .db("URL")
+        .collection("Url")
+        .updateOne(
+          { username: email },
+          {
+            $set: {
+              password:hpassword,
+              temp:"no"
+            },
+          }
+        );
+        return ("found");
+      }
+    }else return ("not found");
+  }
