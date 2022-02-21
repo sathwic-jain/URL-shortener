@@ -115,7 +115,7 @@ app.get("/all", async (req, res) => {
   const client = await createConnection();
   const urls = await client.db("URL").collection("Url").find({}).toArray();
 
-  res.status(200).send({ data: urls });
+  res.status(200).send(urls );
 });
 
 app.post("/get-url", async (req, res) => {
